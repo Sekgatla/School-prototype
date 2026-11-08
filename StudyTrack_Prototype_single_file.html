@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en-ZA" data-size="normal" data-contrast="normal">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StudyTrack – Student assignment planner (POE Part 3 prototype)</title>
+<style>
+:root{
+  --bg:#f2f5ef; --surface:#ffffff; --side:#e8efe9; --ink:#1b2a25; --muted:#475550;
+  --line:#cdd7d1; --line-strong:#6f7f78;
+  --green:#1f5a4b; --green-ink:#ffffff; --green-soft:#e0ede7;
+  --amber-soft:#fbf1d4; --amber-line:#d9c27a;
+  --danger:#9b1c13; --danger-soft:#fbe8e5;
+  --ok:#1b5e32; --ok-soft:#dff1e4;
+  --neutral-soft:#eceeea;
+  --focus:#0b57d0; --radius:12px;
+  --serif:"Source Serif 4",Georgia,"Liberation Serif","Times New Roman",serif;
+  --sans:"DM Sans",system-ui,"Segoe UI",Roboto,"Liberation Sans",Arial,sans-serif;
+}
+html[data-contrast="high"]{
+  --bg:#ffffff; --side:#ffffff; --ink:#000000; --muted:#111111; --line:#000000; --line-strong:#000000;
+  --green:#003c2e; --green-soft:#ffffff; --amber-soft:#ffffff; --amber-line:#000000;
+  --danger:#8a0000; --danger-soft:#ffffff; --ok:#004d1f; --ok-soft:#ffffff; --neutral-soft:#ffffff;
+  --focus:#0000d6;
+}
+html[data-contrast="high"] .item,html[data-contrast="high"] .card,html[data-contrast="high"] .badge,
+html[data-contrast="high"] .btn,html[data-contrast="high"] input,html[data-contrast="high"] select,
+html[data-contrast="high"] textarea{border:2px solid #000}
+html[data-contrast="high"] .field-inline input,html[data-contrast="high"] .field-inline select{border:0}
+html[data-contrast="high"] .field-inline{border:2px solid #000}
+html[data-contrast="high"] .btn.primary{background:#003c2e;color:#fff}
+html{font-size:16px}
+html[data-size="large"]{font-size:20px}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+h1,h2,h3,p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:.5rem;top:-4rem;background:var(--ink);color:#fff;padding:.6rem 1rem;border-radius:8px;z-index:50}
+.skip:focus{top:.5rem}
+svg.i{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* layout */
+.app{display:grid;grid-template-columns:15.5rem minmax(0,1fr);min-height:100vh}
+.side{background:var(--side);border-right:1px solid var(--line);padding:1.25rem 1rem;display:flex;flex-direction:column;gap:1.5rem;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:.7rem}
+.logo{width:2.4rem;height:2.4rem;border-radius:10px;background:var(--green);color:#fff;display:grid;place-items:center}
+.brand b{font-family:var(--serif);font-size:1.25rem;display:block;line-height:1.1}
+.brand small{color:var(--muted);font-size:.72rem;line-height:1.2;display:block}
+.navgrp h2{font-size:.8rem;color:var(--muted);font-weight:600;margin:0 0 .4rem .6rem}
+.navbtn{width:100%;display:flex;align-items:center;gap:.65rem;background:none;border:0;padding:.6rem .7rem;border-radius:9px;cursor:pointer;text-align:left;color:var(--ink)}
+.navbtn:hover{background:rgba(31,90,75,.09)}
+.navbtn[aria-current="page"]{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);font-weight:600}
+.navbtn .n{margin-left:auto;font-size:.8rem;background:var(--green-soft);border-radius:99px;padding:0 .5rem;min-width:1.5rem;text-align:center}
+.side .spacer{flex:1}
+.content{padding:0 2rem 4rem;max-width:62rem;width:100%}
+.topbar{display:flex;align-items:center;gap:.8rem;padding:1rem 0;border-bottom:1px solid var(--line);margin-bottom:1.5rem}
+.crumbs{color:var(--muted);font-size:.85rem;margin-right:auto}
+.crumbs b{color:var(--ink);font-weight:600}
+.mob{display:none}
+.topbar .btn,.avatar{flex:none}
+.chip{white-space:nowrap}
+.avatar{width:2.2rem;height:2.2rem;border-radius:50%;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-weight:700;font-size:.8rem;border:1px solid var(--line)}
+.pagehead{display:flex;gap:1rem;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:1.4rem}
+.date{color:var(--danger);font-size:.85rem;font-weight:600;margin-bottom:.3rem}
+html[data-contrast="high"] .date{color:#000}
+h1{font-family:var(--serif);font-weight:500;font-size:clamp(2rem,4.2vw,3.1rem);line-height:1.08;letter-spacing:-.01em}
+.sub{color:var(--muted);margin-top:.4rem}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface);padding:.55rem 1rem;cursor:pointer;font-weight:600;min-height:2.6rem}
+.btn:hover{background:var(--green-soft)}
+.btn.primary{background:var(--green);color:var(--green-ink);border-color:var(--green)}
+.btn.primary:hover{background:#174538}
+.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.sm{padding:.3rem .75rem;min-height:2.25rem;font-size:.9rem}
+.linkbtn{background:none;border:0;color:var(--green);text-decoration:underline;cursor:pointer;padding:.2rem .3rem;font-size:.9rem}
+html[data-contrast="high"] .linkbtn{color:#000}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:1rem;margin-bottom:1.6rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem 1.25rem}
+.card.next{background:var(--green-soft);border-color:#b9d1c6}
+.card.calm{background:var(--amber-soft);border-color:var(--amber-line);display:flex;flex-direction:column;gap:.5rem;justify-content:center}
+.card .small{font-size:.82rem;color:var(--muted);font-weight:600;display:flex;gap:.4rem;align-items:center}
+.card h2{font-family:var(--serif);font-weight:500;font-size:1.55rem;line-height:1.2;margin:.35rem 0}
+.card.calm h2{font-size:1.4rem;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:.3rem 1rem;color:var(--muted);font-size:.88rem}
+.meta span{display:inline-flex;gap:.35rem;align-items:center}
+.nextrow{display:flex;align-items:flex-end;gap:1rem;margin-top:.9rem;flex-wrap:wrap}
+.nextrow .grow{flex:1;min-width:12rem}
+.bar{height:.55rem;border-radius:99px;background:rgba(31,90,75,.18);overflow:hidden;margin:.3rem 0}
+html[data-contrast="high"] .bar{background:#fff;border:2px solid #000}
+.bar>span{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .25s}
+.pt{font-size:.85rem;color:var(--muted)}
+
+/* toolbar */
+.toolbar{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin-bottom:.9rem;border-bottom:1px solid var(--line);padding-bottom:.6rem}
+.seg{display:flex;gap:.25rem}
+.seg button{background:none;border:0;border-bottom:3px solid transparent;padding:.45rem .7rem;cursor:pointer;font-weight:500;color:var(--muted);border-radius:6px 6px 0 0}
+.seg button[aria-pressed="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--green)}
+.tools{margin-left:auto;display:flex;gap:.6rem;flex-wrap:wrap}
+.field-inline{display:flex;align-items:center;gap:.4rem;background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;padding:0 .6rem}
+.field-inline input,.field-inline select{border:0;background:none;padding:.5rem .1rem;min-height:2.4rem;min-width:0}
+.field-inline input{width:11rem}
+.field-inline input:focus-visible,.field-inline select:focus-visible{outline:0}
+.field-inline:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+
+/* list */
+.list{display:flex;flex-direction:column;gap:.7rem;padding:0;margin:0;list-style:none}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.item.flash{animation:flash 1.6s ease-out}
+@keyframes flash{from{box-shadow:0 0 0 4px #b9d1c6}to{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.item.flash{animation:none}.bar>span{transition:none}}
+.row{display:grid;grid-template-columns:2.4rem minmax(0,1fr) 10rem auto;gap:.9rem;align-items:center;padding:.9rem 1rem;cursor:pointer}
+.ico{width:2.4rem;height:2.4rem;border-radius:9px;background:var(--green-soft);display:grid;place-items:center;color:var(--green)}
+.ttl{font-size:1rem;font-weight:700}
+.expander{all:unset;cursor:pointer;display:inline-flex;gap:.4rem;align-items:center;font-weight:700;border-radius:6px}
+.expander:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.expander .chev{display:inline-flex;flex:none;transition:transform .15s;color:var(--muted)}
+.expander[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.subj{color:var(--muted);font-size:.88rem}
+.mini{display:flex;align-items:center;gap:.5rem;margin-top:.2rem;font-size:.8rem;color:var(--muted)}
+.mini .bar{width:6rem;margin:0}
+.due{display:flex;flex-direction:column;line-height:1.3}
+.due .lbl{font-size:.75rem;color:var(--muted)}
+.due strong{font-size:.95rem}
+.due .rel{font-size:.8rem;color:var(--muted)}
+.item.is-overdue .due strong{color:var(--danger)}
+html[data-contrast="high"] .item.is-overdue .due strong{color:#000;text-decoration:underline}
+.badges{display:flex;flex-direction:column;gap:.35rem;align-items:flex-start}
+.badge{display:inline-flex;align-items:center;gap:.35rem;border-radius:99px;padding:.15rem .65rem;font-size:.8rem;font-weight:600;white-space:nowrap;border:1px solid transparent}
+.b-over{background:var(--danger-soft);color:var(--danger);border-color:#efb9b2}
+.b-prog{background:var(--green-soft);color:var(--green);border-color:#b9d1c6}
+.b-new{background:var(--neutral-soft);color:#38453f;border-color:#cfd5d1}
+.b-done{background:var(--ok-soft);color:var(--ok);border-color:#a9d4b5}
+.b-pri{background:var(--surface);color:var(--ink);border-color:var(--line-strong);font-weight:500}
+.detail{border-top:1px solid var(--line);padding:1rem 1.2rem 1.2rem 4.3rem;background:#fbfcfa;display:grid;gap:.8rem}
+html[data-contrast="high"] .detail{background:#fff}
+.notes{color:var(--muted);font-size:.92rem;max-width:60ch}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
+.steps li{display:flex;align-items:center;gap:.5rem;min-height:2.4rem}
+.steps label{display:flex;gap:.65rem;align-items:center;cursor:pointer;flex:1;padding:.2rem 0}
+.steps input[type=checkbox]{width:1.35rem;height:1.35rem;accent-color:var(--green);flex:none}
+.steps input:checked+span{text-decoration:line-through;color:var(--muted)}
+.addstep{display:flex;gap:.5rem;flex-wrap:wrap}
+.addstep input{flex:1;min-width:12rem}
+input[type=text],input[type=date],select,textarea{border:1px solid var(--line-strong);border-radius:9px;padding:.55rem .7rem;background:var(--surface);min-height:2.6rem;width:100%}
+textarea{resize:vertical}
+.actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.empty{background:var(--surface);border:1px dashed var(--line-strong);border-radius:var(--radius);padding:2rem 1.2rem;text-align:center;display:grid;gap:.6rem;justify-items:center}
+.empty h3{font-family:var(--serif);font-weight:500;font-size:1.3rem}
+.muted{color:var(--muted)}
+
+/* dialogs */
+dialog{border:0;border-radius:16px;padding:0;width:min(36rem,calc(100% - 1.5rem));max-height:calc(100dvh - 2rem);background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(10,25,20,.35)}
+html[data-contrast="high"] dialog{border:3px solid #000}
+dialog::backdrop{background:rgba(20,35,30,.5)}
+dialog form,dialog .dwrap{display:flex;flex-direction:column;max-height:calc(100dvh - 2rem)}
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.4rem .4rem}
+.dhead h2{font-family:var(--serif);font-weight:500;font-size:1.6rem}
+.xbtn{background:none;border:1px solid transparent;border-radius:8px;width:2.4rem;height:2.4rem;cursor:pointer;font-size:1.5rem;line-height:1}
+.xbtn:hover{background:var(--green-soft)}
+.dbody{padding:.4rem 1.4rem 1rem;overflow:auto;display:grid;gap:1rem}
+.dfoot{display:flex;justify-content:flex-end;gap:.6rem;padding:.9rem 1.4rem;border-top:1px solid var(--line);flex-wrap:wrap}
+.hint{color:var(--muted);font-size:.9rem}
+.fld{display:grid;gap:.3rem}
+.fld label,.fld legend{font-weight:600;font-size:.92rem}
+.req{font-weight:400;color:var(--muted);font-size:.85rem}
+.help{font-size:.82rem;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;align-items:start}
+.err{color:var(--danger);font-size:.88rem;font-weight:600;display:flex;gap:.4rem;align-items:flex-start}
+html[data-contrast="high"] .err{color:#000}
+.fld.bad input,.fld.bad select{border:2px solid var(--danger)}
+.errsum{background:var(--danger-soft);border:1px solid #efb9b2;border-left:5px solid var(--danger);border-radius:10px;padding:.8rem 1rem;font-size:.92rem}
+.errsum ul{margin:.4rem 0 0;padding-left:1.2rem}
+.errsum a{color:var(--danger);font-weight:600}
+html[data-contrast="high"] .errsum a{color:#000}
+details.more{border:1px solid var(--line);border-radius:10px;padding:.2rem .9rem}
+details.more summary{cursor:pointer;font-weight:600;padding:.55rem 0}
+details.more[open] summary{margin-bottom:.3rem}
+.switchrow{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
+.switchrow:last-child{border-bottom:0}
+.switchrow .t{display:grid}
+.switchrow .btn{white-space:nowrap}
+.switchrow .t b{font-weight:600}
+.sw{display:flex;align-items:center;gap:.55rem;cursor:pointer}
+.sw input{appearance:none;width:3rem;height:1.7rem;border-radius:99px;background:#7b8a84;position:relative;cursor:pointer;flex:none;border:0;transition:background .15s}
+.sw input::after{content:"";position:absolute;left:.2rem;top:.2rem;width:1.3rem;height:1.3rem;border-radius:50%;background:#fff;transition:transform .15s}
+.sw input:checked{background:var(--green)}
+.sw input:checked::after{transform:translateX(1.3rem)}
+.sw .st{min-width:2rem;font-weight:700;font-size:.9rem}
+.panel{background:var(--green-soft);border:1px solid #b9d1c6;border-radius:12px;padding:.9rem 1rem;display:grid;gap:.6rem}
+.checks{display:grid;gap:.35rem;border:0;padding:0;margin:0}
+.checks label{display:flex;gap:.6rem;align-items:center;min-height:2.2rem}
+.checks input{width:1.25rem;height:1.25rem;accent-color:var(--green)}
+.preview{background:var(--surface);border:1px dashed var(--line-strong);border-radius:12px;padding:.9rem 1rem;display:grid;gap:.8rem}
+.preview h3{font-size:.85rem;color:var(--muted);font-weight:600}
+.pv{display:grid;gap:.25rem;padding-bottom:.6rem;border-bottom:1px solid var(--line)}
+.pv:last-child{border-bottom:0;padding-bottom:0}
+.pv ul{list-style:none;margin:0;padding:0;font-size:.9rem}
+.pv li{display:flex;gap:.4rem}
+.linkrow{display:flex;gap:.5rem}
+.linkrow input{flex:1;font-size:.88rem;color:var(--muted)}
+.note-sim{font-size:.82rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line-strong);border-radius:99px;padding:.1rem .6rem;font-size:.8rem;background:var(--surface)}
+.chip.on{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* toast */
+#toasts{position:fixed;left:1.2rem;bottom:1.2rem;display:grid;gap:.5rem;z-index:100;max-width:min(28rem,calc(100% - 2rem))}
+.toast{background:#17302a;color:#fff;border-radius:12px;padding:.75rem 1rem;display:flex;gap:.8rem;align-items:center;box-shadow:0 8px 28px rgba(0,0,0,.3);font-size:.92rem}
+html[data-contrast="high"] .toast{background:#000;border:2px solid #fff}
+.toast button{background:none;border:1px solid rgba(255,255,255,.55);color:#fff;border-radius:8px;padding:.25rem .7rem;cursor:pointer;font-weight:600;white-space:nowrap}
+.toast .ok{color:#8fe0b0;flex:none}
+
+/* auth */
+body[data-auth="out"] .app,body[data-auth="out"] .bottomnav,body[data-auth="out"] .skip{display:none}
+body[data-auth="in"] #authView{display:none}
+.auth{min-height:100vh;display:grid;place-items:center;padding:1.5rem}
+.authcard{width:min(30rem,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:1.6rem 1.7rem;display:grid;gap:1rem;box-shadow:0 10px 40px rgba(20,50,40,.08)}
+html[data-contrast="high"] .authcard{border:3px solid #000}
+.authcard h1{font-size:2.1rem}
+.authtabs{display:flex;gap:.25rem;border-bottom:1px solid var(--line)}
+.authtabs button{background:none;border:0;border-bottom:3px solid transparent;padding:.5rem .8rem;cursor:pointer;font-weight:500;color:var(--muted);border-radius:6px 6px 0 0}
+.authtabs button[aria-pressed="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--green)}
+.authcard form{display:grid;gap:.9rem}
+.showpw{display:flex;gap:.5rem;align-items:center;font-size:.9rem;min-height:2.2rem}
+.showpw input{width:1.2rem;height:1.2rem;accent-color:var(--green)}
+.demo{background:var(--amber-soft);border:1px solid var(--amber-line);border-radius:12px;padding:.8rem 1rem;display:grid;gap:.35rem;font-size:.92rem}
+html[data-contrast="high"] .demo{border:2px solid #000}
+.demo p{margin:0}
+.demo code{font-family:ui-monospace,Consolas,"Liberation Mono",monospace;background:#fff;border:1px solid var(--line);border-radius:6px;padding:.05rem .4rem;font-size:.9rem}
+.demo .btn{justify-self:start}
+input[type=email],input[type=password]{border:1px solid var(--line-strong);border-radius:9px;padding:.55rem .7rem;background:var(--surface);min-height:2.6rem;width:100%}
+.fld.bad input[type=email],.fld.bad input[type=password]{border:2px solid var(--danger)}
+html[data-contrast="high"] input[type=email],html[data-contrast="high"] input[type=password]{border:2px solid #000}
+
+/* bottom nav (mobile) */
+.bottomnav{display:none}
+
+@media (max-width:860px){
+  .app{display:block}
+  .side{display:none}
+  .content{padding:0 1rem 6.5rem}
+  .mob{display:flex}
+  .chip .lg{display:none}
+  .topbar{gap:.5rem}
+  .topbar .brand{margin-right:auto}
+  .crumbs{display:none}
+  .hero{grid-template-columns:1fr}
+  .row{grid-template-columns:2.4rem minmax(0,1fr);}
+  .row .due{grid-column:2}
+  .row .badges{grid-column:2;flex-direction:row;flex-wrap:wrap}
+  .detail{padding:1rem}
+  .tools{margin-left:0;width:100%}
+  .field-inline{flex:1}
+  .field-inline input{width:100%}
+  .pagehead .btn{width:100%}
+  .bottomnav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line-strong);padding:.3rem .2rem calc(.3rem + env(safe-area-inset-bottom,0px));z-index:40}
+  .bottomnav button{background:none;border:0;display:grid;justify-items:center;gap:.1rem;font-size:.75rem;padding:.4rem .2rem;cursor:pointer;color:var(--muted);border-radius:8px;min-height:3rem}
+  .bottomnav button[aria-current="page"]{color:var(--green);font-weight:700}
+  html[data-contrast="high"] .bottomnav button[aria-current="page"]{color:#000;text-decoration:underline}
+  #toasts{left:.8rem;right:.8rem;bottom:5.2rem;max-width:none}
+  dialog{width:100%;max-height:100dvh;height:auto;margin:auto 0 0 0;border-radius:18px 18px 0 0;max-width:none}
+  dialog form,dialog .dwrap{max-height:92dvh}
+  .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-auth="out">
+<a class="skip" href="#main">Skip to your assignments</a>
+
+<main id="authView" class="auth" aria-labelledby="authH">
+  <div class="authcard">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z"/></svg></span>
+      <span><b style="font-family:var(--serif);font-size:1.25rem;display:block;line-height:1.1">StudyTrack</b><small style="color:var(--muted);font-size:.78rem">A little more room to think</small></span>
+    </div>
+    <div><h1 id="authH">Welcome back.</h1><p class="sub" id="authSub">Sign in to see your assignments.</p></div>
+    <div class="authtabs" role="group" aria-label="Account options">
+      <button type="button" id="tabIn" aria-pressed="true">Sign in</button>
+      <button type="button" id="tabUp" aria-pressed="false">Create account</button>
+    </div>
+    <form id="fIn" novalidate>
+      <div class="errsum" role="alert" tabindex="-1" hidden></div>
+      <div class="fld" id="g-inEmail"><label for="inEmail">Email address</label>
+        <input type="email" id="inEmail" autocomplete="username" aria-describedby="h-inEmail"><p class="help" id="h-inEmail">The email you used to create your account.</p></div>
+      <div class="fld" id="g-inPw"><label for="inPw">Password</label>
+        <input type="password" id="inPw" autocomplete="current-password" aria-describedby="h-inPw"><p class="help" id="h-inPw">Passwords are case-sensitive.</p></div>
+      <label class="showpw"><input type="checkbox" data-showpw="inPw"> Show password</label>
+      <button type="submit" class="btn primary">Sign in</button>
+    </form>
+    <form id="fUp" novalidate hidden>
+      <div class="errsum" role="alert" tabindex="-1" hidden></div>
+      <div class="fld" id="g-upName"><label for="upName">Your name</label>
+        <input type="text" id="upName" autocomplete="name" aria-describedby="h-upName"><p class="help" id="h-upName">Shown in the corner of your dashboard.</p></div>
+      <div class="fld" id="g-upEmail"><label for="upEmail">Email address</label>
+        <input type="email" id="upEmail" autocomplete="username" aria-describedby="h-upEmail"><p class="help" id="h-upEmail">For example: name@university.ac.za</p></div>
+      <div class="fld" id="g-upPw"><label for="upPw">Password</label>
+        <input type="password" id="upPw" autocomplete="new-password" aria-describedby="h-upPw"><p class="help" id="h-upPw">Use at least 8 characters.</p></div>
+      <label class="showpw"><input type="checkbox" data-showpw="upPw"> Show password</label>
+      <button type="submit" class="btn primary">Create account</button>
+    </form>
+    <div class="demo" id="demoBox">
+      <strong>Demo account (for marking)</strong>
+      <p>Email: <code>student@studytrack.demo</code></p>
+      <p>Password: <code>StudyTrack2026!</code></p>
+      <button type="button" class="btn sm" id="useDemo">Use demo details</button>
+    </div>
+    <p class="note-sim">Prototype note: sign-in is simulated. Nothing is sent to a server, and accounts are saved in this browser only.</p>
+  </div>
+</main>
+
+<div class="app">
+  <aside class="side" aria-label="Sidebar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z"/></svg></span>
+      <span><b>StudyTrack</b><small>A little more room to think</small></span>
+    </div>
+    <nav class="navgrp" aria-label="Your space">
+      <h2>Your space</h2>
+      <button class="navbtn" data-tab="todo" data-nav><span data-ico="list"></span>Assignments<span class="n" data-count="todo"></span></button>
+      <button class="navbtn" data-tab="done" data-nav><span data-ico="check"></span>Completed<span class="n" data-count="done"></span></button>
+      <button class="navbtn" data-tab="archived" data-nav><span data-ico="archive"></span>Archive<span class="n" data-count="archived"></span></button>
+    </nav>
+    <div class="spacer"></div>
+    <button class="navbtn" id="openPrefs"><span data-ico="sliders"></span>Preferences</button>
+    <button class="navbtn" id="signOut"><span data-ico="out"></span>Sign out</button>
+  </aside>
+
+  <div class="content">
+    <header class="topbar">
+      <div class="brand mob"><span class="logo" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z"/></svg></span><b>StudyTrack</b></div>
+      <p class="crumbs">My study space &rsaquo; <b>Assignments</b></p>
+      <button class="btn sm" id="openShare"><span data-ico="share"></span>Share <span class="chip" id="shareChip">Sharing off</span></button>
+      <span class="avatar" id="avatar" role="img" aria-label="Signed in">TM</span>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <div class="pagehead">
+        <div>
+          <p class="date" id="todayLine"></p>
+          <h1>Your work, in one place.</h1>
+          <p class="sub">Take a breath, then choose what feels useful to do next.</p>
+        </div>
+        <button class="btn primary" id="addBtn"><span data-ico="plus"></span>Add assignment</button>
+      </div>
+
+      <section class="hero" aria-label="Where to start" id="hero"></section>
+
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Show assignments">
+          <button data-tab="todo" aria-pressed="true">To do <span data-count="todo"></span></button>
+          <button data-tab="done" aria-pressed="false">Completed</button>
+          <button data-tab="archived" aria-pressed="false">Archived</button>
+        </div>
+        <div class="tools">
+          <label class="field-inline"><span data-ico="search"></span><span class="sr">Search assignments</span><input type="search" id="q" placeholder="Find an assignment" autocomplete="off"></label>
+          <label class="field-inline"><span class="sr">Sort by</span><select id="sort"><option value="soonest">Soonest first</option><option value="latest">Latest first</option><option value="priority">Highest priority</option></select></label>
+        </div>
+      </div>
+
+      <h2 class="sr" id="listHead">Assignments</h2>
+      <ul class="list" id="list" aria-labelledby="listHead"></ul>
+    </main>
+  </div>
+</div>
+
+<nav class="bottomnav" aria-label="Main">
+  <button data-tab="todo" data-nav><span data-ico="list"></span>To do</button>
+  <button data-tab="done" data-nav><span data-ico="check"></span>Completed</button>
+  <button data-tab="archived" data-nav><span data-ico="archive"></span>Archive</button>
+  <button id="openPrefs2"><span data-ico="sliders"></span>Settings</button>
+</nav>
+
+<div id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<!-- Add / edit assignment -->
+<dialog id="dlgAssign" aria-labelledby="aTitle">
+  <form id="fAssign" novalidate>
+    <div class="dhead"><h2 id="aTitle">Add assignment</h2><button type="button" class="xbtn" data-close aria-label="Close without saving">&times;</button></div>
+    <div class="dbody">
+      <p class="hint">Three fields are required. Everything else can wait until later.</p>
+      <div id="errSummary" class="errsum" role="alert" tabindex="-1" hidden></div>
+      <div class="fld" id="g-title"><label for="fTitle">Title <span class="req">(required)</span></label>
+        <input type="text" id="fTitle" maxlength="100" autocomplete="off" aria-describedby="h-title">
+        <p class="help" id="h-title">Use a name you will recognise at a glance.</p></div>
+      <div class="fld" id="g-subject"><label for="fSubject">Subject <span class="req">(required)</span></label>
+        <input type="text" id="fSubject" list="subjects" autocomplete="off" aria-describedby="h-subject"><datalist id="subjects"></datalist>
+        <p class="help" id="h-subject">Pick a subject you already use or type a new one.</p></div>
+      <div class="two">
+        <div class="fld" id="g-due"><label for="fDue">Due date <span class="req">(required)</span></label>
+          <input type="date" id="fDue" aria-describedby="h-due"><p class="help" id="h-due">Choose today or a later date.</p></div>
+        <div class="fld"><label for="fPrio">Priority <span class="req">(optional)</span></label>
+          <select id="fPrio"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div>
+      </div>
+      <div class="fld"><label for="fEffort">Estimated effort <span class="req">(optional)</span></label>
+        <select id="fEffort"><option value="">Not sure yet</option><option>About 30 minutes</option><option>About 1 hour</option><option>About 2 hours</option><option>About half a day</option><option>A few days</option></select></div>
+      <details class="more" id="moreDet"><summary>Add notes or first steps (optional)</summary>
+        <div class="fld"><label for="fNotes">Notes</label><textarea id="fNotes" rows="2"></textarea></div>
+        <div class="fld" style="margin-top:.6rem"><label for="fSteps">First steps</label><textarea id="fSteps" rows="3" aria-describedby="h-steps"></textarea><p class="help" id="h-steps">One step per line. You can add more later.</p></div>
+      </details>
+    </div>
+    <div class="dfoot"><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn primary" id="saveBtn">Save assignment</button></div>
+  </form>
+</dialog>
+
+<!-- Share -->
+<dialog id="dlgShare" aria-labelledby="sTitle">
+  <div class="dwrap">
+    <div class="dhead"><h2 id="sTitle">Share with a study partner</h2><button type="button" class="xbtn" data-close aria-label="Close sharing">&times;</button></div>
+    <div class="dbody">
+      <div class="switchrow" style="border:0;padding:0">
+        <div class="t"><b id="shL">Read-only sharing</b><span class="hint" id="shState"></span></div>
+        <label class="sw"><input type="checkbox" role="switch" id="shSwitch" aria-labelledby="shL"><span class="st" id="shSt">Off</span></label>
+      </div>
+      <div id="shOn" hidden style="display:grid;gap:1rem">
+        <fieldset class="checks"><legend class="hint" style="margin-bottom:.3rem">Choose what your partner can see</legend>
+          <label><input type="checkbox" data-inc="details"> Assignment titles and due dates</label>
+          <label><input type="checkbox" data-inc="steps"> Checklist steps</label>
+          <label><input type="checkbox" data-inc="progress"> Progress percentage</label>
+          <label><input type="checkbox" data-inc="notes"> My notes</label>
+        </fieldset>
+        <fieldset class="checks"><legend class="hint" style="margin-bottom:.3rem">Which assignments</legend><div id="shIds"></div></fieldset>
+        <div class="preview" aria-live="polite"><h3>What your partner will see (read-only)</h3><div id="shPreview"></div></div>
+        <div class="fld"><label for="shLink">Share link</label>
+          <div class="linkrow"><input type="text" id="shLink" readonly><button type="button" class="btn sm" id="copyLink">Copy link</button></div>
+          <p class="note-sim">Anyone with the link can view, but not edit. Turn sharing off to remove access straight away.</p>
+          <p class="note-sim">Prototype note: this link is simulated and nothing is published.</p></div>
+      </div>
+      <p class="hint" id="shOffMsg">Your plan is private. Nobody else can see it unless you turn sharing on.</p>
+    </div>
+    <div class="dfoot"><button type="button" class="btn" data-close>Done</button></div>
+  </div>
+</dialog>
+
+<!-- Preferences -->
+<dialog id="dlgPrefs" aria-labelledby="pTitle">
+  <div class="dwrap">
+    <div class="dhead"><h2 id="pTitle">Preferences</h2><button type="button" class="xbtn" data-close aria-label="Close preferences">&times;</button></div>
+    <div class="dbody" style="gap:0">
+      <div class="switchrow"><div class="t"><b id="rmL">Deadline reminders</b><span class="hint" id="rmH">Off. StudyTrack will not remind you.</span></div>
+        <label class="sw"><input type="checkbox" role="switch" id="rmSw" aria-labelledby="rmL"><span class="st" id="rmSt">Off</span></label></div>
+      <div class="switchrow" id="rmWhen" hidden><div class="t"><b><label for="rmSel">Remind me</label></b></div>
+        <select id="rmSel" style="width:auto"><option value="1">1 day before</option><option value="3">3 days before</option><option value="7">1 week before</option></select></div>
+      <div class="switchrow"><div class="t"><b id="lgL">Larger text</b><span class="hint">Increases text size across the page.</span></div>
+        <label class="sw"><input type="checkbox" role="switch" id="lgSw" aria-labelledby="lgL"><span class="st" id="lgSt">Off</span></label></div>
+      <div class="switchrow"><div class="t"><b id="hcL">High contrast</b><span class="hint">Black text, white surfaces and strong outlines.</span></div>
+        <label class="sw"><input type="checkbox" role="switch" id="hcSw" aria-labelledby="hcL"><span class="st" id="hcSt">Off</span></label></div>
+      <div class="switchrow"><div class="t"><b>Account</b><span class="hint" id="acctInfo"></span></div><button type="button" class="btn sm" id="signOut2">Sign out</button></div>
+      <div class="switchrow"><div class="t"><b>Sample data</b><span class="hint">Restore the example assignments used in this prototype.</span></div>
+        <button type="button" class="btn sm" id="resetData">Reset</button></div>
+      <p class="note-sim" style="margin-top:.6rem">Prototype note: reminders are simulated. Your changes are saved in this browser only.</p>
+    </div>
+    <div class="dfoot"><button type="button" class="btn" data-close>Done</button></div>
+  </div>
+</dialog>
+
+<!-- Confirm delete -->
+<dialog id="dlgConfirm" aria-labelledby="cTitle" aria-describedby="cText">
+  <div class="dwrap">
+    <div class="dhead"><h2 id="cTitle">Delete this assignment?</h2></div>
+    <div class="dbody"><p id="cText"></p></div>
+    <div class="dfoot"><button type="button" class="btn" data-close id="cCancel">Keep it</button><button type="button" class="btn danger" id="cOk">Delete assignment</button></div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+"use strict";
+var KEY="studytrack.final.v1";var user=null;var DEMO={email:"student@studytrack.demo",name:"Thabelo Manubi",pw:"StudyTrack2026!"};
+var params=new URLSearchParams(location.search);
+var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],DOWL=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],MONL=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function parseISO(s){var p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+var TODAY=(function(){var t=params.get("today");if(t&&/^\d{4}-\d{2}-\d{2}$/.test(t))return parseISO(t);var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());})();
+var TODAY_ISO=iso(TODAY);
+function addDays(n){var d=new Date(TODAY);d.setDate(d.getDate()+n);return iso(d);}
+function daysTo(s){return Math.round((parseISO(s)-TODAY)/86400000);}
+function fmt(s){var d=parseISO(s);return DOW[d.getDay()]+", "+d.getDate()+" "+MON[d.getMonth()];}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];});}
+
+var ICONS={
+ book:'<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',chev:'<path d="M9 6l6 6-6 6"/>',
+ clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
+ share:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/>',
+ sliders:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+ list:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+ archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11h14V8M10 12h4"/>',
+ search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+ alert:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5.5M12 16.5h.01"/>',
+ half:'<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>',
+ out:'<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/>',circle:'<circle cx="12" cy="12" r="8.5"/>',cc:'<circle cx="12" cy="12" r="8.5"/><path d="M8 12.5l2.8 2.8L16 9.8"/>'
+};
+function icon(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+ICONS[n]+'</svg>';}
+document.querySelectorAll("[data-ico]").forEach(function(el){el.innerHTML=icon(el.getAttribute("data-ico"));el.style.display="inline-flex";});
+
+/* ---------- state ---------- */
+function seed(){
+  var n=1;function S(t,d){return{id:"s"+(n++),text:t,done:!!d};}
+  return{nextId:20,
+   assignments:[
+    {id:"a1",title:"Seminar notes: responsibility",subject:"Ethics and public life",due:addDays(-1),priority:"high",effort:"About 1 hour",notes:"Summarise the key arguments from week 3 and add two questions for the tutor.",steps:[S("Gather the week 3 seminar notes",1),S("Summarise the key arguments"),S("Write two questions for the tutor")],completed:false,archived:false},
+    {id:"a2",title:"Reading response: care and community",subject:"Sociology of everyday life",due:addDays(2),priority:"high",effort:"About 2 hours",notes:"Use the week 4 reading and bring in one example from the seminar.",steps:[S("Revisit the seminar notes",1),S("Choose a passage from the reading"),S("Draft a 500-word response")],completed:false,archived:false},
+    {id:"a3",title:"Group case study: draft slides",subject:"Business communication",due:addDays(6),priority:"medium",effort:"About half a day",notes:"",steps:[],completed:false,archived:false},
+    {id:"a4",title:"Usability findings: lab report",subject:"Human computer interaction",due:addDays(13),priority:"low",effort:"A few days",notes:"Use the think-aloud notes from the lab session.",steps:[S("Collect the observation notes"),S("Group findings by severity")],completed:false,archived:false},
+    {id:"a5",title:"Quiz reflection",subject:"Ethics and public life",due:addDays(-4),priority:"low",effort:"About 30 minutes",notes:"",steps:[S("Review the quiz feedback",1),S("Write three lines on what to revise",1)],completed:true,archived:false}
+   ],
+   prefs:{reminders:false,remindWhen:"1",large:false,contrast:false},
+   share:{on:false,include:{details:true,steps:true,progress:true,notes:false},ids:[]}
+  };
+}
+var data=blank();
+function load(){try{var r=localStorage.getItem(KEY);if(r){var d=JSON.parse(r);if(d&&d.assignments)return d;}}catch(e){}return user&&user.demo?seed():blank();}
+function blank(){return{nextId:20,assignments:[],prefs:{reminders:false,remindWhen:"1",large:false,contrast:false},share:{on:false,include:{details:true,steps:true,progress:true,notes:false},ids:[]}};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+var ui={tab:"todo",q:"",sort:"soonest",open:{},last:null};
+
+/* ---------- helpers ---------- */
+function byId(id){return data.assignments.filter(function(a){return a.id===id;})[0];}
+function stepsDone(a){return a.steps.filter(function(s){return s.done;}).length;}
+function pct(a){if(a.completed)return 100;return a.steps.length?Math.round(stepsDone(a)/a.steps.length*100):0;}
+function isOver(a){return !a.completed&&daysTo(a.due)<0;}
+function state(a){if(a.completed)return"done";return stepsDone(a)>0?"prog":"new";}
+function rel(a){if(a.completed)return"";var d=daysTo(a.due);if(d<0)return(-d)+(d===-1?" day":" days")+" overdue";if(d===0)return"due today";if(d===1)return"tomorrow";return"in "+d+" days";}
+function active(){return data.assignments.filter(function(a){return !a.archived&&!a.completed;});}
+function counts(){return{todo:active().length,done:data.assignments.filter(function(a){return a.completed&&!a.archived;}).length,archived:data.assignments.filter(function(a){return a.archived;}).length};}
+function uid(p){return p+(data.nextId++);}
+var PRI={high:"High priority",medium:"Medium priority",low:"Low priority"};
+
+/* ---------- toasts ---------- */
+function toast(msg,undoFn,sticky){
+  var box=document.getElementById("toasts");
+  if(!undoFn){Array.prototype.slice.call(box.children).forEach(function(c){if(!c.dataset.keep)c.remove();});}
+  var t=document.createElement("div");t.className="toast";
+  t.innerHTML='<span class="ok">'+icon("cc")+'</span><span style="flex:1">'+esc(msg)+'</span>';
+  if(undoFn){var u=document.createElement("button");u.type="button";u.textContent="Undo";u.addEventListener("click",function(){undoFn();t.remove();});t.appendChild(u);t.dataset.keep="1";}
+  var d=document.createElement("button");d.type="button";d.textContent="Dismiss";d.addEventListener("click",function(){t.remove();});t.appendChild(d);
+  box.appendChild(t);
+  if(!undoFn&&!sticky){setTimeout(function(){if(t.parentNode)t.remove();},9000);}
+  while(box.children.length>2)box.firstChild.remove();
+}
+
+/* ---------- render ---------- */
+function renderChrome(){
+  var c=counts();
+  document.querySelectorAll("[data-count]").forEach(function(el){var k=el.getAttribute("data-count");el.textContent=c[k];if(el.classList.contains("n"))el.setAttribute("aria-label",c[k]+" items");});
+  document.querySelectorAll("[data-tab]").forEach(function(b){
+    if(b.hasAttribute("data-nav")){if(b.getAttribute("data-tab")===ui.tab)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");}
+    else b.setAttribute("aria-pressed",b.getAttribute("data-tab")===ui.tab?"true":"false");
+  });
+  var d=TODAY;document.getElementById("todayLine").textContent=DOWL[d.getDay()]+", "+d.getDate()+" "+MONL[d.getMonth()];
+  var chip=document.getElementById("shareChip");chip.innerHTML='<span class="lg">Sharing </span>'+(data.share.on?"on":"off");chip.classList.toggle("on",data.share.on);
+  var crumb=document.querySelector(".crumbs b");crumb.textContent={todo:"Assignments",done:"Completed",archived:"Archive"}[ui.tab];
+}
+function nextOne(){
+  var a=active().slice().sort(function(x,y){return x.due<y.due?-1:1;});
+  var up=a.filter(function(x){return daysTo(x.due)>=0;});
+  return up[0]||a[0]||null;
+}
+function renderHero(){
+  var n=nextOne(),h="";
+  if(n){
+    var p=pct(n),sd=stepsDone(n),tot=n.steps.length;
+    h+='<div class="card next"><p class="small">'+icon("clock")+'A good place to begin</p><h2>'+esc(n.title)+'</h2>'+
+      '<div class="meta"><span>'+icon("book")+esc(n.subject)+'</span><span>'+icon("cal")+'Due '+fmt(n.due)+'</span>'+(n.effort?'<span>'+icon("clock")+esc(n.effort)+'</span>':'')+'</div>'+
+      '<div class="nextrow"><div class="grow"><div class="pt">'+(tot?'Small steps so far':'No steps yet')+'</div><div class="bar" role="progressbar" aria-label="Progress on '+esc(n.title)+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+p+'"><span style="width:'+p+'%"></span></div>'+
+      '<div class="pt">'+(tot?sd+' of '+tot+' steps checked off &middot; '+p+'%':'Add a first small step to get moving')+'</div></div>'+
+      '<button class="btn" data-act="continue" data-id="'+n.id+'">Continue this one '+icon("chev")+'</button></div></div>';
+  }else{
+    if(!data.assignments.length)h+='<div class="card next"><p class="small">'+icon("clock")+'Welcome to StudyTrack</p><h2>Start with one assignment.</h2><p class="meta">Only a title, subject and due date are needed. It takes under a minute.</p><div class="nextrow"><button class="btn primary" data-act="add">'+icon("plus")+'Add your first assignment</button></div></div>';
+    else h+='<div class="card next"><p class="small">'+icon("clock")+'Nothing waiting</p><h2>You are all caught up.</h2><p class="meta">Add an assignment when the next deadline arrives.</p></div>';
+  }
+  var over=active().filter(isOver).sort(function(x,y){return x.due<y.due?-1:1;})[0];
+  h+='<div class="card calm"><h2>Progress is not a race.</h2>'+
+    (over?'<p class="pt" style="color:var(--ink)">&ldquo;'+esc(over.title)+'&rdquo; is past its date. Choose one small step, or change the deadline if plans have moved.</p><div><button class="btn sm" data-act="edit" data-id="'+over.id+'">Change deadline</button></div>':
+    '<p class="pt" style="color:var(--ink)">Your plan is here to help, not to judge.</p>')+'</div>';
+  document.getElementById("hero").innerHTML=h;
+}
+function badgeFor(a){
+  var o=isOver(a),s=state(a);
+  if(s==="done")return'<span class="badge b-done">'+icon("cc")+'Complete</span>';
+  var txt=s==="prog"?"In progress":"Not started";
+  if(o)return'<span class="badge b-over">'+icon("alert")+'Overdue &middot; '+txt.toLowerCase()+'</span>';
+  return s==="prog"?'<span class="badge b-prog">'+icon("half")+txt+'</span>':'<span class="badge b-new">'+icon("circle")+txt+'</span>';
+}
+function itemHTML(a){
+  var open=!!ui.open[a.id],p=pct(a),sd=stepsDone(a),tot=a.steps.length;
+  var h='<li class="item'+(isOver(a)?' is-overdue':'')+(ui.last===a.id?' flash':'')+'" data-id="'+a.id+'">';
+  h+='<div class="row" data-rowtoggle><span class="ico">'+icon("book")+'</span>'+
+     '<div><h3 class="ttl"><button type="button" class="expander" id="t-'+a.id+'" aria-expanded="'+open+'" aria-controls="d-'+a.id+'" data-act="toggle" data-id="'+a.id+'">'+esc(a.title)+'<span class="chev">'+icon("chev")+'</span></button></h3>'+
+     '<p class="subj">'+esc(a.subject)+'</p>'+
+     '<div class="mini">'+(tot?'<div class="bar" aria-hidden="true"><span style="width:'+p+'%"></span></div><span>'+sd+' of '+tot+' steps</span>':'<span>No steps yet</span>')+'</div></div>'+
+     '<div class="due"><span class="lbl">Due date</span><strong>'+fmt(a.due)+'</strong><span class="rel">'+rel(a)+'</span></div>'+
+     '<div class="badges">'+badgeFor(a)+'<span class="badge b-pri">'+PRI[a.priority]+'</span></div></div>';
+  h+='<div class="detail" id="d-'+a.id+'"'+(open?'':' hidden')+'>';
+  if(a.notes)h+='<p class="notes">'+esc(a.notes)+'</p>';
+  if(tot){h+='<ul class="steps" aria-label="Steps for '+esc(a.title)+'">';
+    a.steps.forEach(function(s){h+='<li><label><input type="checkbox" data-act="step" data-id="'+a.id+'" data-sid="'+s.id+'"'+(s.done?' checked':'')+'><span>'+esc(s.text)+'</span></label><button type="button" class="linkbtn" data-act="rmstep" data-id="'+a.id+'" data-sid="'+s.id+'" aria-label="Remove step: '+esc(s.text)+'">Remove</button></li>';});
+    h+='</ul>';}
+  else h+='<p class="muted">No steps yet. Break this into one small first step.</p>';
+  if(!a.archived)h+='<form class="addstep" data-act="addstep" data-id="'+a.id+'"><label class="sr" for="ns-'+a.id+'">New step for '+esc(a.title)+'</label><input type="text" id="ns-'+a.id+'" placeholder="Add a step, e.g. Find three sources" autocomplete="off"><button type="submit" class="btn sm">Add step</button></form>';
+  h+='<div><div class="bar" role="progressbar" aria-label="Progress on '+esc(a.title)+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+p+'"><span style="width:'+p+'%"></span></div><p class="pt">'+(a.completed?'Marked complete':(tot?sd+' of '+tot+' steps checked off &middot; '+p+'% complete':'No steps to measure yet'))+(a.effort?' &middot; '+esc(a.effort):'')+'</p></div>';
+  h+='<div class="actions">';
+  if(a.archived){h+='<button class="btn sm" data-act="restore" data-id="'+a.id+'">Restore</button><button class="btn sm" data-act="delete" data-id="'+a.id+'">Delete permanently</button>';}
+  else{
+    h+='<button class="btn sm" data-act="edit" data-id="'+a.id+'">Edit assignment</button>';
+    if(a.completed)h+='<button class="btn sm" data-act="reopen" data-id="'+a.id+'">Reopen</button>';
+    else h+='<button class="btn sm'+(tot&&sd===tot?' primary':'')+'" data-act="complete" data-id="'+a.id+'">Mark complete</button>';
+    h+='<button class="btn sm" data-act="archive" data-id="'+a.id+'">Archive</button>';
+  }
+  h+='</div></div></li>';
+  return h;
+}
+function renderList(){
+  var inTab=data.assignments.filter(function(a){return ui.tab==="archived"?a.archived:(!a.archived&&(ui.tab==="done"?a.completed:!a.completed));});
+  var q=ui.q.trim().toLowerCase();
+  var items=inTab.filter(function(a){return !q||(a.title+" "+a.subject+" "+a.notes).toLowerCase().indexOf(q)>-1;});
+  var w={high:0,medium:1,low:2};
+  items.sort(function(x,y){
+    if(ui.sort==="latest")return x.due<y.due?1:-1;
+    if(ui.sort==="priority")return w[x.priority]-w[y.priority]||(x.due<y.due?-1:1);
+    return x.due<y.due?-1:1;});
+  var h="";
+  if(!items.length){
+    if(q)h='<li class="empty"><h3>No matches for &ldquo;'+esc(ui.q.trim())+'&rdquo;</h3><p class="muted">Check the spelling, or search by subject instead.</p><button class="btn sm" data-act="clearq">Clear search</button></li>';
+    else if(ui.tab==="todo")h='<li class="empty"><h3>Nothing waiting for you.</h3><p class="muted">When the next deadline arrives, add it here in under a minute.</p><button class="btn primary sm" data-act="add">Add assignment</button></li>';
+    else if(ui.tab==="done")h='<li class="empty"><h3>No completed work yet.</h3><p class="muted">Finished assignments will collect here.</p></li>';
+    else h='<li class="empty"><h3>Your archive is empty.</h3><p class="muted">Archived assignments can be restored at any time.</p></li>';
+  }else h=items.map(itemHTML).join("");
+  document.getElementById("list").innerHTML=h;
+  ui.last=null;
+}
+function renderAll(){renderChrome();renderHero();renderList();document.documentElement.dataset.size=data.prefs.large?"large":"normal";document.documentElement.dataset.contrast=data.prefs.contrast?"high":"normal";}
+function keepFocus(sel,fn){fn();if(sel){var el=document.querySelector(sel);if(el)el.focus();}}
+
+/* ---------- dialogs ---------- */
+function openDlg(id){var d=document.getElementById(id);if(!d.open)d.showModal();return d;}
+var opener=null;
+document.addEventListener("click",function(e){var c=e.target.closest("[data-close]");if(c){var d=c.closest("dialog");if(d)d.close();}});
+document.querySelectorAll("dialog").forEach(function(d){d.addEventListener("close",function(){if(opener&&document.body.contains(opener)&&d.id!=="dlgConfirm"){try{opener.focus();}catch(e){}}});
+  d.addEventListener("click",function(e){if(e.target===d&&d.id!=="dlgAssign")d.close();});});
+
+var editing=null;
+function openAssign(id){
+  editing=id?byId(id):null;opener=document.activeElement;
+  var f=document.getElementById("fAssign");clearErrors();
+  document.getElementById("aTitle").textContent=editing?"Edit assignment":"Add assignment";
+  document.getElementById("saveBtn").textContent=editing?"Save changes":"Save assignment";
+  document.getElementById("fTitle").value=editing?editing.title:"";
+  document.getElementById("fSubject").value=editing?editing.subject:"";
+  document.getElementById("fDue").value=editing?editing.due:"";
+  document.getElementById("fPrio").value=editing?editing.priority:"medium";
+  document.getElementById("fEffort").value=editing?editing.effort:"";
+  document.getElementById("fNotes").value=editing?editing.notes:"";
+  document.getElementById("fSteps").value="";
+  document.getElementById("moreDet").open=false;
+  document.getElementById("moreDet").querySelector("#fSteps").closest(".fld").style.display=editing?"none":"";
+  var subs={};data.assignments.forEach(function(a){subs[a.subject]=1;});
+  document.getElementById("subjects").innerHTML=Object.keys(subs).map(function(s){return'<option value="'+esc(s)+'">';}).join("");
+  openDlg("dlgAssign");document.getElementById("fTitle").focus();
+}
+function clearErrors(){
+  document.getElementById("errSummary").hidden=true;
+  ["title","subject","due"].forEach(function(k){var g=document.getElementById("g-"+k);g.classList.remove("bad");var e=g.querySelector(".err");if(e)e.remove();
+    var inp=g.querySelector("input");inp.removeAttribute("aria-invalid");var base="h-"+k;inp.setAttribute("aria-describedby",base);});
+}
+function showError(k,msg,fieldId){
+  var g=document.getElementById("g-"+k);g.classList.add("bad");
+  var p=document.createElement("p");p.className="err";p.id="e-"+k;p.innerHTML=icon("alert")+'<span><span class="sr">Error: </span>'+esc(msg)+'</span>';
+  g.insertBefore(p,g.querySelector(".help"));
+  var inp=document.getElementById(fieldId);inp.setAttribute("aria-invalid","true");inp.setAttribute("aria-describedby","e-"+k+" h-"+k);
+}
+document.getElementById("fAssign").addEventListener("submit",function(e){
+  e.preventDefault();clearErrors();
+  var t=document.getElementById("fTitle").value.trim(),s=document.getElementById("fSubject").value.trim(),d=document.getElementById("fDue").value;
+  var errs=[];
+  if(!t)errs.push(["title","Enter a title, for example \u201cReading response, week 4\u201d.","fTitle"]);
+  if(!s)errs.push(["subject","Enter a subject, for example \u201cSociology\u201d.","fSubject"]);
+  if(!d)errs.push(["due","Enter a due date. Use the date picker or type day, month and year.","fDue"]);
+  else if(d<TODAY_ISO&&(!editing||editing.due!==d))errs.push(["due","That date has already passed. Choose today or a later date.","fDue"]);
+  if(errs.length){
+    errs.forEach(function(x){showError(x[0],x[1],x[2]);});
+    var sum=document.getElementById("errSummary");
+    sum.innerHTML='<strong>'+(errs.length===1?'There is 1 thing to fix before saving:':'There are '+errs.length+' things to fix before saving:')+'</strong><ul>'+errs.map(function(x){return'<li><a href="#'+x[2]+'" data-jump="'+x[2]+'">'+esc(x[1])+'</a></li>';}).join("")+'</ul>';
+    sum.hidden=false;sum.focus();return;
+  }
+  var pr=document.getElementById("fPrio").value,ef=document.getElementById("fEffort").value,nt=document.getElementById("fNotes").value.trim(),a;
+  if(editing){a=editing;a.title=t;a.subject=s;a.due=d;a.priority=pr;a.effort=ef;a.notes=nt;}
+  else{
+    a={id:uid("a"),title:t,subject:s,due:d,priority:pr,effort:ef,notes:nt,steps:[],completed:false,archived:false};
+    document.getElementById("fSteps").value.split("\n").map(function(x){return x.trim();}).filter(Boolean).slice(0,10).forEach(function(x){a.steps.push({id:uid("s"),text:x,done:false});});
+    data.assignments.push(a);
+  }
+  ui.tab=a.completed?"done":"todo";ui.q="";document.getElementById("q").value="";ui.open[a.id]=true;ui.last=a.id;
+  save();document.getElementById("dlgAssign").close();opener=null;renderAll();
+  var ex=document.getElementById("t-"+a.id);if(ex){ex.focus();ex.scrollIntoView({block:"center"});}
+  toast(editing?"Changes saved to \u201c"+a.title+"\u201d.":"Assignment saved. \u201c"+a.title+"\u201d is on your list.");
+});
+document.getElementById("errSummary").addEventListener("click",function(e){var a=e.target.closest("[data-jump]");if(a){e.preventDefault();document.getElementById(a.getAttribute("data-jump")).focus();}});
+
+/* ---------- share ---------- */
+function renderShare(){
+  var s=data.share,on=s.on;
+  document.getElementById("shSwitch").checked=on;document.getElementById("shSt").textContent=on?"On":"Off";
+  document.getElementById("shState").textContent=on?"On. People with the link can view what you choose below.":"Off. Only you can see your plan.";
+  document.getElementById("shOn").hidden=!on;document.getElementById("shOn").style.display=on?"grid":"none";
+  document.getElementById("shOffMsg").hidden=on;
+  if(!on)return;
+  document.querySelectorAll("[data-inc]").forEach(function(c){c.checked=!!s.include[c.getAttribute("data-inc")];});
+  var act=active();
+  document.getElementById("shIds").innerHTML=act.map(function(a){return'<label><input type="checkbox" data-shid="'+a.id+'"'+(s.ids.indexOf(a.id)>-1?' checked':'')+'> '+esc(a.title)+'</label>';}).join("")||'<p class="hint">No active assignments to share.</p>';
+  var chosen=act.filter(function(a){return s.ids.indexOf(a.id)>-1;}),h="";
+  if(!chosen.length)h='<p class="hint">Nothing selected yet, so your partner would see an empty page.</p>';
+  chosen.forEach(function(a){
+    h+='<div class="pv"><strong>'+(s.include.details?esc(a.title):'Assignment')+'</strong>';
+    if(s.include.details)h+='<span class="pt">Due '+fmt(a.due)+'</span>';
+    if(s.include.progress)h+='<span class="pt">'+pct(a)+'% complete</span>';
+    if(s.include.steps&&a.steps.length)h+='<ul>'+a.steps.map(function(x){return'<li><span aria-hidden="true">'+(x.done?'\u2713':'\u25CB')+'</span><span>'+esc(x.text)+' <span class="sr">('+(x.done?'done':'to do')+')</span></span></li>';}).join("")+'</ul>';
+    if(s.include.notes&&a.notes)h+='<span class="pt">Notes: '+esc(a.notes)+'</span>';
+    h+='</div>';});
+  document.getElementById("shPreview").innerHTML=h;
+  document.getElementById("shLink").value="https://studytrack.example/share/k7f2-q9m4";
+}
+function openShare(){opener=document.activeElement;renderShare();openDlg("dlgShare");}
+document.getElementById("shSwitch").addEventListener("change",function(e){
+  data.share.on=e.target.checked;
+  if(data.share.on&&!data.share.ids.length)data.share.ids=active().map(function(a){return a.id;});
+  save();renderShare();renderChrome();
+  toast(data.share.on?"Read-only sharing is on. Check the preview before you send the link.":"Sharing is off. The link no longer works.");
+});
+document.getElementById("dlgShare").addEventListener("change",function(e){
+  var i=e.target.getAttribute("data-inc"),id=e.target.getAttribute("data-shid");
+  if(i){data.share.include[i]=e.target.checked;}
+  if(id){var k=data.share.ids.indexOf(id);if(e.target.checked&&k<0)data.share.ids.push(id);if(!e.target.checked&&k>-1)data.share.ids.splice(k,1);}
+  if(i||id){save();renderShare();}
+});
+document.getElementById("copyLink").addEventListener("click",function(){
+  var v=document.getElementById("shLink").value;try{navigator.clipboard.writeText(v);}catch(e){}
+  toast("Link copied. (Simulated in this prototype.)");
+});
+
+/* ---------- prefs ---------- */
+function renderPrefs(){
+  var p=data.prefs;
+  [["rm","reminders"],["lg","large"],["hc","contrast"]].forEach(function(x){document.getElementById(x[0]+"Sw").checked=!!p[x[1]];document.getElementById(x[0]+"St").textContent=p[x[1]]?"On":"Off";});
+  document.getElementById("rmH").textContent=p.reminders?"On. You choose when to be reminded.":"Off. StudyTrack will not remind you.";
+  document.getElementById("rmWhen").hidden=!p.reminders;document.getElementById("rmSel").value=p.remindWhen;
+}
+function openPrefs(){opener=document.activeElement;renderPrefs();openDlg("dlgPrefs");}
+document.getElementById("dlgPrefs").addEventListener("change",function(e){
+  var m={rmSw:"reminders",lgSw:"large",hcSw:"contrast"},id=e.target.id;
+  if(m[id]){data.prefs[m[id]]=e.target.checked;}
+  if(id==="rmSel")data.prefs.remindWhen=e.target.value;
+  save();renderPrefs();renderAll();
+  if(id==="rmSw")toast(data.prefs.reminders?"Reminders are on. You can switch them off at any time.":"Reminders are off.");
+});
+document.getElementById("resetData").addEventListener("click",function(){data=seed();ui.open={};save();renderPrefs();renderAll();toast("Sample data restored.");});
+
+/* ---------- actions ---------- */
+function setTab(t){ui.tab=t;renderAll();}
+document.addEventListener("click",function(e){
+  var nav=e.target.closest("[data-tab]");if(nav){setTab(nav.getAttribute("data-tab"));return;}
+  var b=e.target.closest("[data-act]");
+  if(!b){var row=e.target.closest("[data-rowtoggle]");if(row&&!e.target.closest("button,a,input,label")){var it=row.closest(".item");toggle(it.getAttribute("data-id"));}return;}
+  var act=b.getAttribute("data-act"),id=b.getAttribute("data-id"),a=id?byId(id):null;
+  if(act==="toggle"){toggle(id,true);}
+  else if(act==="add"){openAssign();}
+  else if(act==="clearq"){ui.q="";document.getElementById("q").value="";renderList();document.getElementById("q").focus();}
+  else if(act==="continue"){ui.tab="todo";ui.open[id]=true;renderAll();var t=document.getElementById("t-"+id);if(t){t.scrollIntoView({block:"center"});t.focus();}}
+  else if(act==="edit"){openAssign(id);}
+  else if(act==="complete"){a.completed=true;save();renderAll();focusRowAfter(id);toast("\u201c"+a.title+"\u201d is marked complete. Nice work.",function(){a.completed=false;save();renderAll();});}
+  else if(act==="reopen"){a.completed=false;save();renderAll();toast("\u201c"+a.title+"\u201d moved back to your to-do list.");}
+  else if(act==="archive"){a.archived=true;save();renderAll();toast("\u201c"+a.title+"\u201d moved to Archive.",function(){a.archived=false;save();renderAll();});}
+  else if(act==="restore"){a.archived=false;save();renderAll();toast("\u201c"+a.title+"\u201d restored.");}
+  else if(act==="delete"){opener=null;document.getElementById("cText").textContent="\u201c"+a.title+"\u201d will be removed for good. This cannot be undone.";var ok=document.getElementById("cOk");ok.onclick=function(){data.assignments=data.assignments.filter(function(x){return x.id!==id;});save();document.getElementById("dlgConfirm").close();renderAll();toast("Assignment deleted.");};openDlg("dlgConfirm");document.getElementById("cCancel").focus();}
+  else if(act==="rmstep"){var sid=b.getAttribute("data-sid");var rm=a.steps.filter(function(s){return s.id===sid;})[0];a.steps=a.steps.filter(function(s){return s.id!==sid;});save();renderAll();focusRowAfter(id);toast("Step removed.",function(){a.steps.push(rm);save();renderAll();});}
+});
+function focusRowAfter(id){var t=document.getElementById("t-"+id);if(t)t.focus();}
+function toggle(id,fromBtn){ui.open[id]=!ui.open[id];var it=document.querySelector('.item[data-id="'+id+'"]');
+  var btn=document.getElementById("t-"+id),det=document.getElementById("d-"+id);
+  btn.setAttribute("aria-expanded",ui.open[id]);det.hidden=!ui.open[id];}
+document.addEventListener("change",function(e){
+  var c=e.target.closest('[data-act="step"]');if(!c)return;
+  var a=byId(c.getAttribute("data-id")),s=a.steps.filter(function(x){return x.id===c.getAttribute("data-sid");})[0];
+  s.done=c.checked;save();var scroll=window.scrollY;renderAll();window.scrollTo(0,scroll);
+  var again=document.querySelector('[data-sid="'+s.id+'"][data-act="step"]');if(again)again.focus();
+  var d=stepsDone(a),t=a.steps.length;
+  if(c.checked){toast(d===t?"All "+t+" steps are checked off. Mark the assignment complete when you are ready.":"Step checked. "+d+" of "+t+" done \u2013 "+pct(a)+"% complete.");}
+  else toast("Step unchecked. "+d+" of "+t+" done.");
+});
+document.addEventListener("submit",function(e){
+  var f=e.target.closest('[data-act="addstep"]');if(!f)return;e.preventDefault();
+  var a=byId(f.getAttribute("data-id")),inp=f.querySelector("input"),v=inp.value.trim();
+  if(!v){inp.setAttribute("aria-invalid","true");toast("Type what the step is, then choose Add step.");return;}
+  a.steps.push({id:uid("s"),text:v,done:false});save();renderAll();
+  var again=document.getElementById("ns-"+a.id);if(again)again.focus();
+  toast("Step added to \u201c"+a.title+"\u201d.");
+});
+document.getElementById("addBtn").addEventListener("click",function(){openAssign();});
+document.getElementById("openShare").addEventListener("click",openShare);
+document.getElementById("openPrefs").addEventListener("click",openPrefs);
+document.getElementById("openPrefs2").addEventListener("click",openPrefs);
+document.getElementById("q").addEventListener("input",function(e){ui.q=e.target.value;renderList();});
+document.getElementById("sort").addEventListener("change",function(e){ui.sort=e.target.value;renderList();});
+
+/* ---------- accounts (simulated, browser-only) ---------- */
+function accounts(){try{return JSON.parse(localStorage.getItem("studytrack.accounts"))||{};}catch(e){return{};}}
+function saveAccounts(a){try{localStorage.setItem("studytrack.accounts",JSON.stringify(a));}catch(e){}}
+function hashPw(email,pw){
+  var str="studytrack|"+email+"|"+pw;
+  try{return crypto.subtle.digest("SHA-256",new TextEncoder().encode(str)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return x.toString(16).padStart(2,"0");}).join("");});}
+  catch(e){var h=5381;for(var i=0;i<str.length;i++)h=((h<<5)+h+str.charCodeAt(i))|0;return Promise.resolve("d"+h);}
+}
+function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
+function authClear(form){
+  form.querySelectorAll(".err").forEach(function(e){e.remove();});
+  form.querySelectorAll(".fld.bad").forEach(function(g){g.classList.remove("bad");});
+  form.querySelectorAll("input").forEach(function(i){i.removeAttribute("aria-invalid");if(i.dataset.d!==undefined)i.setAttribute("aria-describedby",i.dataset.d);});
+  form.querySelector(".errsum").hidden=true;
+}
+function authFail(form,errs){
+  authClear(form);
+  errs.forEach(function(x){
+    var g=document.getElementById(x[0]),inp=document.getElementById(x[1]);
+    if(inp.dataset.d===undefined)inp.dataset.d=inp.getAttribute("aria-describedby")||"";
+    g.classList.add("bad");
+    var p=document.createElement("p");p.className="err";p.id="e-"+x[1];
+    p.innerHTML=icon("alert")+'<span><span class="sr">Error: </span>'+esc(x[2])+'</span>';
+    g.insertBefore(p,g.querySelector(".help"));
+    inp.setAttribute("aria-invalid","true");inp.setAttribute("aria-describedby","e-"+x[1]+" "+inp.dataset.d);
+  });
+  var sm=form.querySelector(".errsum");
+  sm.innerHTML="<strong>"+(errs.length===1?"There is 1 thing to fix:":"There are "+errs.length+" things to fix:")+"</strong><ul>"+errs.map(function(x){return'<li><a href="#'+x[1]+'" data-jump="'+x[1]+'">'+esc(x[2])+"</a></li>";}).join("")+"</ul>";
+  sm.hidden=false;sm.focus();
+}
+document.querySelector(".authcard").addEventListener("click",function(e){var a=e.target.closest("[data-jump]");if(a){e.preventDefault();document.getElementById(a.getAttribute("data-jump")).focus();}});
+function showAuthTab(t){
+  var inn=t==="in";
+  document.getElementById("fIn").hidden=!inn;document.getElementById("fUp").hidden=inn;
+  document.getElementById("tabIn").setAttribute("aria-pressed",inn);document.getElementById("tabUp").setAttribute("aria-pressed",!inn);
+  document.getElementById("authH").textContent=inn?"Welcome back.":"Create your account.";
+  document.getElementById("authSub").textContent=inn?"Sign in to see your assignments.":"It takes under a minute. Your plan stays private.";
+}
+document.getElementById("tabIn").addEventListener("click",function(){showAuthTab("in");});
+document.getElementById("tabUp").addEventListener("click",function(){showAuthTab("up");});
+document.getElementById("useDemo").addEventListener("click",function(){
+  showAuthTab("in");authClear(document.getElementById("fIn"));
+  document.getElementById("inEmail").value=DEMO.email;document.getElementById("inPw").value=DEMO.pw;
+  document.querySelector("#fIn button[type=submit]").focus();
+});
+document.addEventListener("change",function(e){var k=e.target.getAttribute&&e.target.getAttribute("data-showpw");if(k)document.getElementById(k).type=e.target.checked?"text":"password";});
+var MISMATCH=["g-inPw","inPw","That email and password do not match. Check them, or use the demo details below."];
+document.getElementById("fIn").addEventListener("submit",function(e){
+  e.preventDefault();var f=e.currentTarget,errs=[];
+  var em=document.getElementById("inEmail").value.trim().toLowerCase(),pw=document.getElementById("inPw").value;
+  if(!em)errs.push(["g-inEmail","inEmail","Enter your email address, for example name@university.ac.za."]);
+  else if(!validEmail(em))errs.push(["g-inEmail","inEmail","That email address looks incomplete. Check for an @ sign and a domain."]);
+  if(!pw)errs.push(["g-inPw","inPw","Enter your password."]);
+  if(errs.length){authFail(f,errs);return;}
+  authClear(f);
+  if(em===DEMO.email){if(pw===DEMO.pw)startSession({email:em,name:DEMO.name,demo:true},"in");else authFail(f,[MISMATCH]);return;}
+  var acc=accounts()[em];if(!acc){authFail(f,[MISMATCH]);return;}
+  hashPw(em,pw).then(function(h){if(h===acc.h)startSession({email:em,name:acc.name,demo:false},"in");else authFail(f,[MISMATCH]);});
+});
+document.getElementById("fUp").addEventListener("submit",function(e){
+  e.preventDefault();var f=e.currentTarget,errs=[];
+  var nm=document.getElementById("upName").value.trim(),em=document.getElementById("upEmail").value.trim().toLowerCase(),pw=document.getElementById("upPw").value;
+  if(!nm)errs.push(["g-upName","upName","Enter your name."]);
+  if(!em)errs.push(["g-upEmail","upEmail","Enter your email address, for example name@university.ac.za."]);
+  else if(!validEmail(em))errs.push(["g-upEmail","upEmail","That email address looks incomplete. Check for an @ sign and a domain."]);
+  else if(em===DEMO.email||accounts()[em])errs.push(["g-upEmail","upEmail","An account with that email already exists. Choose Sign in instead."]);
+  if(pw.length<8)errs.push(["g-upPw","upPw",pw?"Use at least 8 characters.":"Enter a password with at least 8 characters."]);
+  if(errs.length){authFail(f,errs);return;}
+  authClear(f);
+  hashPw(em,pw).then(function(h){var a=accounts();a[em]={name:nm,h:h};saveAccounts(a);startSession({email:em,name:nm,demo:false},"up");});
+});
+function startSession(u,how){
+  user=u;KEY="studytrack.final.v1:"+u.email;data=load();
+  ui={tab:"todo",q:"",sort:"soonest",open:{},last:null};
+  document.getElementById("q").value="";document.getElementById("sort").value="soonest";
+  try{localStorage.setItem("studytrack.session",JSON.stringify(u));}catch(e){}
+  document.body.dataset.auth="in";
+  var ini=u.name.split(/\s+/).filter(Boolean).map(function(w){return w[0];}).slice(0,2).join("").toUpperCase()||"ST";
+  var av=document.getElementById("avatar");av.textContent=ini;av.setAttribute("aria-label","Signed in as "+u.name);av.title=u.name+" ("+u.email+")";
+  document.getElementById("acctInfo").textContent="Signed in as "+u.name+" ("+u.email+").";
+  renderAll();
+  var first=u.name.split(" ")[0];
+  if(how==="in")toast("Welcome back, "+first+".");
+  if(how==="up")toast("Account created. Welcome to StudyTrack, "+first+".");
+  if(how!=="restore"){window.scrollTo(0,0);document.getElementById("main").focus();}
+}
+function signOut(){
+  document.querySelectorAll("dialog[open]").forEach(function(d){d.close();});
+  try{localStorage.removeItem("studytrack.session");}catch(e){}
+  user=null;data=blank();opener=null;
+  document.getElementById("toasts").innerHTML="";
+  document.documentElement.dataset.size="normal";document.documentElement.dataset.contrast="normal";
+  document.body.dataset.auth="out";showAuthTab("in");
+  ["inEmail","inPw","upName","upEmail","upPw"].forEach(function(id){document.getElementById(id).value="";});
+  authClear(document.getElementById("fIn"));authClear(document.getElementById("fUp"));
+  document.getElementById("inEmail").focus();
+}
+document.getElementById("signOut").addEventListener("click",signOut);
+document.getElementById("signOut2").addEventListener("click",signOut);
+
+var ses=null;try{ses=JSON.parse(localStorage.getItem("studytrack.session"));}catch(e){}
+if(ses&&ses.email){startSession(ses,"restore");}
+})();
+</script>
+</body>
+</html>

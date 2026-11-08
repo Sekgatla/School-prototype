@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en-ZA" data-size="normal" data-contrast="normal">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StudyTrack – Student assignment planner (POE Part 3 prototype)</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-auth="out">
+<a class="skip" href="#main">Skip to your assignments</a>
+
+<main id="authView" class="auth" aria-labelledby="authH">
+  <div class="authcard">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z"/></svg></span>
+      <span><b style="font-family:var(--serif);font-size:1.25rem;display:block;line-height:1.1">StudyTrack</b><small style="color:var(--muted);font-size:.78rem">A little more room to think</small></span>
+    </div>
+    <div><h1 id="authH">Welcome back.</h1><p class="sub" id="authSub">Sign in to see your assignments.</p></div>
+    <div class="authtabs" role="group" aria-label="Account options">
+      <button type="button" id="tabIn" aria-pressed="true">Sign in</button>
+      <button type="button" id="tabUp" aria-pressed="false">Create account</button>
+    </div>
+    <form id="fIn" novalidate>
+      <div class="errsum" role="alert" tabindex="-1" hidden></div>
+      <div class="fld" id="g-inEmail"><label for="inEmail">Email address</label>
+        <input type="email" id="inEmail" autocomplete="username" aria-describedby="h-inEmail"><p class="help" id="h-inEmail">The email you used to create your account.</p></div>
+      <div class="fld" id="g-inPw"><label for="inPw">Password</label>
+        <input type="password" id="inPw" autocomplete="current-password" aria-describedby="h-inPw"><p class="help" id="h-inPw">Passwords are case-sensitive.</p></div>
+      <label class="showpw"><input type="checkbox" data-showpw="inPw"> Show password</label>
+      <button type="submit" class="btn primary">Sign in</button>
+    </form>
+    <form id="fUp" novalidate hidden>
+      <div class="errsum" role="alert" tabindex="-1" hidden></div>
+      <div class="fld" id="g-upName"><label for="upName">Your name</label>
+        <input type="text" id="upName" autocomplete="name" aria-describedby="h-upName"><p class="help" id="h-upName">Shown in the corner of your dashboard.</p></div>
+      <div class="fld" id="g-upEmail"><label for="upEmail">Email address</label>
+        <input type="email" id="upEmail" autocomplete="username" aria-describedby="h-upEmail"><p class="help" id="h-upEmail">For example: name@university.ac.za</p></div>
+      <div class="fld" id="g-upPw"><label for="upPw">Password</label>
+        <input type="password" id="upPw" autocomplete="new-password" aria-describedby="h-upPw"><p class="help" id="h-upPw">Use at least 8 characters.</p></div>
+      <label class="showpw"><input type="checkbox" data-showpw="upPw"> Show password</label>
+      <button type="submit" class="btn primary">Create account</button>
+    </form>
+    <div class="demo" id="demoBox">
+      <strong>Demo account (for marking)</strong>
+      <p>Email: <code>student@studytrack.demo</code></p>
+      <p>Password: <code>StudyTrack2026!</code></p>
+      <button type="button" class="btn sm" id="useDemo">Use demo details</button>
+    </div>
+    <p class="note-sim">Prototype note: sign-in is simulated. Nothing is sent to a server, and accounts are saved in this browser only.</p>
+  </div>
+</main>
+
+<div class="app">
+  <aside class="side" aria-label="Sidebar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z"/></svg></span>
+      <span><b>StudyTrack</b><small>A little more room to think</small></span>
+    </div>
+    <nav class="navgrp" aria-label="Your space">
+      <h2>Your space</h2>
+      <button class="navbtn" data-tab="todo" data-nav><span data-ico="list"></span>Assignments<span class="n" data-count="todo"></span></button>
+      <button class="navbtn" data-tab="done" data-nav><span data-ico="check"></span>Completed<span class="n" data-count="done"></span></button>
+      <button class="navbtn" data-tab="archived" data-nav><span data-ico="archive"></span>Archive<span class="n" data-count="archived"></span></button>
+    </nav>
+    <div class="spacer"></div>
+    <button class="navbtn" id="openPrefs"><span data-ico="sliders"></span>Preferences</button>
+    <button class="navbtn" id="signOut"><span data-ico="out"></span>Sign out</button>
+  </aside>
+
+  <div class="content">
+    <header class="topbar">
+      <div class="brand mob"><span class="logo" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z"/></svg></span><b>StudyTrack</b></div>
+      <p class="crumbs">My study space &rsaquo; <b>Assignments</b></p>
+      <button class="btn sm" id="openShare"><span data-ico="share"></span>Share <span class="chip" id="shareChip">Sharing off</span></button>
+      <span class="avatar" id="avatar" role="img" aria-label="Signed in">TM</span>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <div class="pagehead">
+        <div>
+          <p class="date" id="todayLine"></p>
+          <h1>Your work, in one place.</h1>
+          <p class="sub">Take a breath, then choose what feels useful to do next.</p>
+        </div>
+        <button class="btn primary" id="addBtn"><span data-ico="plus"></span>Add assignment</button>
+      </div>
+
+      <section class="hero" aria-label="Where to start" id="hero"></section>
+
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Show assignments">
+          <button data-tab="todo" aria-pressed="true">To do <span data-count="todo"></span></button>
+          <button data-tab="done" aria-pressed="false">Completed</button>
+          <button data-tab="archived" aria-pressed="false">Archived</button>
+        </div>
+        <div class="tools">
+          <label class="field-inline"><span data-ico="search"></span><span class="sr">Search assignments</span><input type="search" id="q" placeholder="Find an assignment" autocomplete="off"></label>
+          <label class="field-inline"><span class="sr">Sort by</span><select id="sort"><option value="soonest">Soonest first</option><option value="latest">Latest first</option><option value="priority">Highest priority</option></select></label>
+        </div>
+      </div>
+
+      <h2 class="sr" id="listHead">Assignments</h2>
+      <ul class="list" id="list" aria-labelledby="listHead"></ul>
+    </main>
+  </div>
+</div>
+
+<nav class="bottomnav" aria-label="Main">
+  <button data-tab="todo" data-nav><span data-ico="list"></span>To do</button>
+  <button data-tab="done" data-nav><span data-ico="check"></span>Completed</button>
+  <button data-tab="archived" data-nav><span data-ico="archive"></span>Archive</button>
+  <button id="openPrefs2"><span data-ico="sliders"></span>Settings</button>
+</nav>
+
+<div id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<!-- Add / edit assignment -->
+<dialog id="dlgAssign" aria-labelledby="aTitle">
+  <form id="fAssign" novalidate>
+    <div class="dhead"><h2 id="aTitle">Add assignment</h2><button type="button" class="xbtn" data-close aria-label="Close without saving">&times;</button></div>
+    <div class="dbody">
+      <p class="hint">Three fields are required. Everything else can wait until later.</p>
+      <div id="errSummary" class="errsum" role="alert" tabindex="-1" hidden></div>
+      <div class="fld" id="g-title"><label for="fTitle">Title <span class="req">(required)</span></label>
+        <input type="text" id="fTitle" maxlength="100" autocomplete="off" aria-describedby="h-title">
+        <p class="help" id="h-title">Use a name you will recognise at a glance.</p></div>
+      <div class="fld" id="g-subject"><label for="fSubject">Subject <span class="req">(required)</span></label>
+        <input type="text" id="fSubject" list="subjects" autocomplete="off" aria-describedby="h-subject"><datalist id="subjects"></datalist>
+        <p class="help" id="h-subject">Pick a subject you already use or type a new one.</p></div>
+      <div class="two">
+        <div class="fld" id="g-due"><label for="fDue">Due date <span class="req">(required)</span></label>
+          <input type="date" id="fDue" aria-describedby="h-due"><p class="help" id="h-due">Choose today or a later date.</p></div>
+        <div class="fld"><label for="fPrio">Priority <span class="req">(optional)</span></label>
+          <select id="fPrio"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div>
+      </div>
+      <div class="fld"><label for="fEffort">Estimated effort <span class="req">(optional)</span></label>
+        <select id="fEffort"><option value="">Not sure yet</option><option>About 30 minutes</option><option>About 1 hour</option><option>About 2 hours</option><option>About half a day</option><option>A few days</option></select></div>
+      <details class="more" id="moreDet"><summary>Add notes or first steps (optional)</summary>
+        <div class="fld"><label for="fNotes">Notes</label><textarea id="fNotes" rows="2"></textarea></div>
+        <div class="fld" style="margin-top:.6rem"><label for="fSteps">First steps</label><textarea id="fSteps" rows="3" aria-describedby="h-steps"></textarea><p class="help" id="h-steps">One step per line. You can add more later.</p></div>
+      </details>
+    </div>
+    <div class="dfoot"><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn primary" id="saveBtn">Save assignment</button></div>
+  </form>
+</dialog>
+
+<!-- Share -->
+<dialog id="dlgShare" aria-labelledby="sTitle">
+  <div class="dwrap">
+    <div class="dhead"><h2 id="sTitle">Share with a study partner</h2><button type="button" class="xbtn" data-close aria-label="Close sharing">&times;</button></div>
+    <div class="dbody">
+      <div class="switchrow" style="border:0;padding:0">
+        <div class="t"><b id="shL">Read-only sharing</b><span class="hint" id="shState"></span></div>
+        <label class="sw"><input type="checkbox" role="switch" id="shSwitch" aria-labelledby="shL"><span class="st" id="shSt">Off</span></label>
+      </div>
+      <div id="shOn" hidden style="display:grid;gap:1rem">
+        <fieldset class="checks"><legend class="hint" style="margin-bottom:.3rem">Choose what your partner can see</legend>
+          <label><input type="checkbox" data-inc="details"> Assignment titles and due dates</label>
+          <label><input type="checkbox" data-inc="steps"> Checklist steps</label>
+          <label><input type="checkbox" data-inc="progress"> Progress percentage</label>
+          <label><input type="checkbox" data-inc="notes"> My notes</label>
+        </fieldset>
+        <fieldset class="checks"><legend class="hint" style="margin-bottom:.3rem">Which assignments</legend><div id="shIds"></div></fieldset>
+        <div class="preview" aria-live="polite"><h3>What your partner will see (read-only)</h3><div id="shPreview"></div></div>
+        <div class="fld"><label for="shLink">Share link</label>
+          <div class="linkrow"><input type="text" id="shLink" readonly><button type="button" class="btn sm" id="copyLink">Copy link</button></div>
+          <p class="note-sim">Anyone with the link can view, but not edit. Turn sharing off to remove access straight away.</p>
+          <p class="note-sim">Prototype note: this link is simulated and nothing is published.</p></div>
+      </div>
+      <p class="hint" id="shOffMsg">Your plan is private. Nobody else can see it unless you turn sharing on.</p>
+    </div>
+    <div class="dfoot"><button type="button" class="btn" data-close>Done</button></div>
+  </div>
+</dialog>
+
+<!-- Preferences -->
+<dialog id="dlgPrefs" aria-labelledby="pTitle">
+  <div class="dwrap">
+    <div class="dhead"><h2 id="pTitle">Preferences</h2><button type="button" class="xbtn" data-close aria-label="Close preferences">&times;</button></div>
+    <div class="dbody" style="gap:0">
+      <div class="switchrow"><div class="t"><b id="rmL">Deadline reminders</b><span class="hint" id="rmH">Off. StudyTrack will not remind you.</span></div>
+        <label class="sw"><input type="checkbox" role="switch" id="rmSw" aria-labelledby="rmL"><span class="st" id="rmSt">Off</span></label></div>
+      <div class="switchrow" id="rmWhen" hidden><div class="t"><b><label for="rmSel">Remind me</label></b></div>
+        <select id="rmSel" style="width:auto"><option value="1">1 day before</option><option value="3">3 days before</option><option value="7">1 week before</option></select></div>
+      <div class="switchrow"><div class="t"><b id="lgL">Larger text</b><span class="hint">Increases text size across the page.</span></div>
+        <label class="sw"><input type="checkbox" role="switch" id="lgSw" aria-labelledby="lgL"><span class="st" id="lgSt">Off</span></label></div>
+      <div class="switchrow"><div class="t"><b id="hcL">High contrast</b><span class="hint">Black text, white surfaces and strong outlines.</span></div>
+        <label class="sw"><input type="checkbox" role="switch" id="hcSw" aria-labelledby="hcL"><span class="st" id="hcSt">Off</span></label></div>
+      <div class="switchrow"><div class="t"><b>Account</b><span class="hint" id="acctInfo"></span></div><button type="button" class="btn sm" id="signOut2">Sign out</button></div>
+      <div class="switchrow"><div class="t"><b>Sample data</b><span class="hint">Restore the example assignments used in this prototype.</span></div>
+        <button type="button" class="btn sm" id="resetData">Reset</button></div>
+      <p class="note-sim" style="margin-top:.6rem">Prototype note: reminders are simulated. Your changes are saved in this browser only.</p>
+    </div>
+    <div class="dfoot"><button type="button" class="btn" data-close>Done</button></div>
+  </div>
+</dialog>
+
+<!-- Confirm delete -->
+<dialog id="dlgConfirm" aria-labelledby="cTitle" aria-describedby="cText">
+  <div class="dwrap">
+    <div class="dhead"><h2 id="cTitle">Delete this assignment?</h2></div>
+    <div class="dbody"><p id="cText"></p></div>
+    <div class="dfoot"><button type="button" class="btn" data-close id="cCancel">Keep it</button><button type="button" class="btn danger" id="cOk">Delete assignment</button></div>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
